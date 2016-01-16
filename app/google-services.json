@@ -1,0 +1,51 @@
+{
+  "project_info": {
+    "project_id": "alexandria-1188",
+    "project_number": "1010267730291",
+    "name": "Alexandria"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010267730291:android:dbdb316ced0c9634",
+        "client_id": "android:com.iklimov.alexandria",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "com.iklimov.alexandria"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1010267730291-uru26c4buvdivkdfc6jg52fjfc6ep2se.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.iklimov.alexandria",
+            "certificate_hash": "51BBA89D53D2A19794A2CE60EB64F9D20C8AEA5B"
+          }
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 1,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 2
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}
