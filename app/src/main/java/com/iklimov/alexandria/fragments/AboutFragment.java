@@ -1,4 +1,4 @@
-package com.iklimov.alexandria;
+package com.iklimov.alexandria.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,9 +10,9 @@ import android.view.ViewGroup;
 import com.iklimov.alexandria.R;
 
 
-public class About extends Fragment {
+public class AboutFragment extends Fragment {
 
-    public About(){
+    public AboutFragment(){
 
     }
 

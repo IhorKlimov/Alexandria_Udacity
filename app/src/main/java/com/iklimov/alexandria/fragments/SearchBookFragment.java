@@ -1,10 +1,6 @@
-package com.iklimov.alexandria;
+package com.iklimov.alexandria.fragments;
 
 import android.content.Context;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.AnimatedVectorDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -21,15 +17,12 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.iklimov.alexandria.api.BooksListAdapter;
+import com.iklimov.alexandria.helpers.Utils;
+import com.iklimov.alexandria.R;
 import com.iklimov.alexandria.api.Book;
-import com.iklimov.alexandria.api.BookResultAdapter;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,10 +31,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 
 
-public class AddBook extends Fragment {
-    private static final String LOG_TAG = "AddBook";
+public class SearchBookFragment extends Fragment {
+    private static final String LOG_TAG = "SearchBookFragment";
 
     private Context mContext;
     private EditText mEan;
@@ -51,7 +45,7 @@ public class AddBook extends Fragment {
     private boolean mRunning;
     private ImageButton scanBtn;
 
-    public AddBook() {
+    public SearchBookFragment() {
     }
 
     @Override
@@ -66,13 +60,13 @@ public class AddBook extends Fragment {
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_add_book, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_search_book, container, false);
         mEan = (EditText) rootView.findViewById(R.id.ean);
         mResultsView = (RecyclerView) rootView.findViewById(R.id.results);
         mContext = getContext();
 
         mSearchResults = new ArrayList<>();
-        mResultsView.setAdapter(new BookResultAdapter(mSearchResults, mContext));
+        mResultsView.setAdapter(new BooksListAdapter(mContext, null, mSearchResults));
         mResultsView.setLayoutManager(new LinearLayoutManager(mContext));
 
         scanBtn = (ImageButton) rootView.findViewById(R.id.scan_button);
@@ -93,6 +87,11 @@ public class AddBook extends Fragment {
                         scanBtn.clearAnimation();
                         scanBtn.setImageResource(R.drawable.ic_search_24dp);
                     }
+
+//                    Drawable d = scanBtn.getDrawable();
+//                    if (d instanceof Animatable) {
+//                        ((Animatable)d).start();
+//                    }
                 } else {
                     Toast.makeText(mContext, "Please check your Internet connection",
                             Toast.LENGTH_SHORT).show();
@@ -173,46 +172,7 @@ public class AddBook extends Fragment {
                 }
             }
         }
-        readJsonBook(bookJsonString);
-    }
-
-    private void readJsonBook(String jsonBook) {
-        final String ITEMS = "items";
-        final String VOLUME_INFO = "volumeInfo";
-        final String TITLE = "title";
-        final String SUBTITLE = "subtitle";
-        final String AUTHORS = "authors";
-        final String DESC = "description";
-        final String CATEGORIES = "categories";
-        final String IMG_URL_PATH = "imageLinks";
-        final String IMG_URL = "thumbnail";
-
-        try {
-            JSONArray bookArray = new JSONObject(jsonBook).getJSONArray(ITEMS);
-
-            for (int i = 0; i < bookArray.length(); i++) {
-                JSONObject bookInfo = bookArray.getJSONObject(i).getJSONObject(VOLUME_INFO);
-
-                String title = bookInfo.getString(TITLE);
-
-                String a = "";
-                if (bookInfo.has(AUTHORS)) {
-                    JSONArray authors = bookInfo.getJSONArray(AUTHORS);
-                    a = authors.getString(0);
-                }
-
-                String desc = "";
-                if (bookInfo.has(DESC)) desc = bookInfo.getString(DESC);
-
-                String imgUrl = "";
-                if (bookInfo.has(IMG_URL_PATH) && bookInfo.getJSONObject(IMG_URL_PATH).has(IMG_URL)) {
-                    imgUrl = bookInfo.getJSONObject(IMG_URL_PATH).getString(IMG_URL);
-                }
-
-                mSearchResults.add(new Book(title, a, imgUrl, desc));
-            }
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, "Error ", e);
-        }
+        Book[] books = Utils.readJsonBook(bookJsonString);
+        if (books != null) Collections.addAll(mSearchResults, books);
     }
 }

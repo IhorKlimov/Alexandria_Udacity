@@ -14,4 +14,11 @@
     <color name="lime_700">#00796B</color>
     <color name="lime_800">#9E9D24</color>
     <color name="lime_900">#004D40</color>
+
+    <color name="teal">#009688</color>
+    <color name="purple">#9C27B0</color>
+
+    <color name="gray_200">#EEEEEE</color>
+
+    <color name="text_sec">#ffffffff</color>
 </resources>

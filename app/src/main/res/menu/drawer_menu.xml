@@ -4,13 +4,13 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/my_books"
-            android:icon="@drawable/favorites_24dp"
-            android:title="@string/books" />
+            android:icon="@drawable/favorites"
+            android:title="@string/my_books" />
         <item
-            android:id="@+id/scan_books"
+            android:id="@+id/search_book"
             android:checked="true"
             android:icon="@drawable/books_24dp"
-            android:title="@string/scan" />
+            android:title="@string/find_a_book" />
         <item
             android:id="@+id/about"
             android:icon="@drawable/about_24dp"

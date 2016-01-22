@@ -1,4 +1,4 @@
-package com.iklimov.alexandria;
+package com.iklimov.alexandria.activities;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -18,7 +19,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,9 +27,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.iklimov.alexandria.api.Callback;
-import com.iklimov.alexandria.api.CircleTransform;
+import com.facebook.stetho.Stetho;
+import com.iklimov.alexandria.api.Book;
+import com.iklimov.alexandria.api.Holder;
+import com.iklimov.alexandria.fragments.BookDetailFragment;
+import com.iklimov.alexandria.fragments.MyBooksListFragment;
+import com.iklimov.alexandria.R;
+import com.iklimov.alexandria.fragments.SearchBookFragment;
+import com.iklimov.alexandria.helpers.Callback;
+import com.iklimov.alexandria.helpers.CircleTransform;
+import com.iklimov.alexandria.fragments.AboutFragment;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity
@@ -45,27 +55,29 @@ public class MainActivity extends AppCompatActivity
     private FragmentManager mFragmentManager;
     private DrawerLayout mDrawer;
     Context context;
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sIsTablet = isTablet();
-        if (sIsTablet) setContentView(R.layout.activity_main_tablet);
-        else setContentView(R.layout.activity_main);
+         setContentView(R.layout.activity_main);
 
         context = this;
+        Stetho.initializeWithDefaults(context);
 
         mFragmentManager = getSupportFragmentManager();
         mFragmentManager.beginTransaction()
-                .replace(R.id.container, new AddBook())
+                .replace(R.id.container, new SearchBookFragment())
                 .commit();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        mToolbar.setTitle(getString(R.string.find_a_book));
 
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+                this, mDrawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 super.onDrawerSlide(drawerView, slideOffset);
@@ -73,8 +85,7 @@ public class MainActivity extends AppCompatActivity
                 InputMethodManager inputMethodManager = (InputMethodManager) act
                         .getSystemService(Activity.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(
-                        act.getCurrentFocus().getWindowToken(),
-                        0
+                        act.getCurrentFocus().getWindowToken(), 0
                 );
             }
         };
@@ -132,10 +143,10 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        }
+//        if (id == R.id.action_settings) {
+//            startActivity(new Intent(this, SettingsActivity.class));
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -147,20 +158,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onItemSelected(String ean) {
-        Bundle args = new Bundle();
-        args.putString(BookDetail.EAN_KEY, ean);
-
-        BookDetail fragment = new BookDetail();
-        fragment.setArguments(args);
-
-        int id = R.id.container;
-        if (findViewById(R.id.right_container) != null) id = R.id.right_container;
-
-        mFragmentManager.beginTransaction()
-                .replace(id, fragment)
-                .addToBackStack("Book Detail")
-                .commit();
+    public void onItemSelected(Uri uri, ArrayList<Book> searchResult, Holder holder) {
+        if (!sIsTablet) {
+            Intent intent = new Intent(context, DetailActivity.class)
+                    .putExtra(BookDetailFragment.BOOK_POSITION, holder.getAdapterPosition());
+            intent.putParcelableArrayListExtra(BookDetailFragment.SEARCH_RESULT, searchResult);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -169,18 +173,21 @@ public class MainActivity extends AppCompatActivity
 
         switch (item.getItemId()) {
             case R.id.my_books:
-                nextFragment = new ListOfBooks();
+                mToolbar.setTitle(getString(R.string.my_books));
+                nextFragment = new MyBooksListFragment();
                 break;
-            case R.id.scan_books:
-                nextFragment = new AddBook();
+            case R.id.search_book:
+                mToolbar.setTitle(getString(R.string.find_a_book));
+                nextFragment = new SearchBookFragment();
                 break;
             case R.id.about:
-                nextFragment = new About();
+                mToolbar.setTitle(getString(R.string.about));
+                nextFragment = new AboutFragment();
         }
 
         mFragmentManager.beginTransaction()
                 .replace(R.id.container, nextFragment)
-                .addToBackStack((String) mTitle)
+                .addToBackStack(null)
                 .commit();
 
         mDrawer.closeDrawer(GravityCompat.START);
@@ -197,16 +204,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void goBack(View view) {
-        getSupportFragmentManager().popBackStack();
-    }
-
     private boolean isTablet() {
         return (getApplicationContext().getResources().getConfiguration().screenLayout
                 & Configuration.SCREENLAYOUT_SIZE_MASK)
                 >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
-
 
     @Override
     public void onBackPressed() {

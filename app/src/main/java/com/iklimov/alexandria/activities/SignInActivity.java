@@ -1,9 +1,12 @@
-package com.iklimov.alexandria;
+package com.iklimov.alexandria.activities;
 
-import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,7 +14,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -22,35 +24,30 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.common.api.Status;
+import com.iklimov.alexandria.BuildConfig;
+import com.iklimov.alexandria.R;
+import com.iklimov.alexandria.api.Book;
+import com.iklimov.alexandria.helpers.Utils;
+import com.iklimov.alexandria.data.AlexandriaContract.Favorites;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import static android.view.View.GONE;
 import static android.view.View.OnClickListener;
-import static android.view.View.VISIBLE;
 import static com.google.android.gms.auth.api.Auth.GOOGLE_SIGN_IN_API;
 import static com.google.android.gms.auth.api.Auth.GoogleSignInApi;
 import static com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder;
 import static com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN;
 import static com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import static com.iklimov.alexandria.R.id.detail;
-import static com.iklimov.alexandria.R.id.disconnect_button;
 import static com.iklimov.alexandria.R.id.sign_in_button;
-import static com.iklimov.alexandria.R.id.sign_out_and_disconnect;
-import static com.iklimov.alexandria.R.id.sign_out_button;
-import static com.iklimov.alexandria.R.id.status;
 import static com.iklimov.alexandria.R.layout.activity_sign_in;
-import static com.iklimov.alexandria.R.string.id_token_fmt;
-import static com.iklimov.alexandria.R.string.signed_in;
-import static com.iklimov.alexandria.R.string.signed_out;
 
 public class SignInActivity extends AppCompatActivity
         implements OnConnectionFailedListener, OnClickListener {
@@ -61,8 +58,10 @@ public class SignInActivity extends AppCompatActivity
     private static final String SCOPE = "oauth2:" + BOOKS_API_SCOPE;
 
     private GoogleApiClient mGoogleApiClient;
-    private TextView mIdTokenTextView;
+    private ProgressDialog mProgressDialog;
     Context context;
+    AppCompatActivity activity;
+    private View mSignInBtn;
 
 
     @Override
@@ -71,14 +70,11 @@ public class SignInActivity extends AppCompatActivity
         setContentView(activity_sign_in);
 
         context = this;
+        activity = this;
 
         // Views
-        mIdTokenTextView = (TextView) findViewById(detail);
-
-        // Button click listeners
-        findViewById(sign_in_button).setOnClickListener(this);
-        findViewById(sign_out_button).setOnClickListener(this);
-        findViewById(disconnect_button).setOnClickListener(this);
+        mSignInBtn = findViewById(sign_in_button);
+        mSignInBtn.setOnClickListener(this);
 
         // [START configure_signin]
         // Request only the user's ID token, which can be used to identify the
@@ -86,7 +82,7 @@ public class SignInActivity extends AppCompatActivity
         // profile (name, profile picture URL, etc) so you should not need to
         // make an additional call to personalize your application.
         GoogleSignInOptions gso = new Builder(DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.server_client_id))
+                .requestIdToken(BuildConfig.MY_CLIENT_ID)
                 .requestScopes(new Scope(BOOKS_API_SCOPE))
                 .requestEmail()
                 .build();
@@ -105,7 +101,22 @@ public class SignInActivity extends AppCompatActivity
         super.onStart();
         OptionalPendingResult<GoogleSignInResult> silentSignIn =
                 Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (silentSignIn.isDone()) startActivity(new Intent(this, MainActivity.class));
+        if (silentSignIn.isDone()) {
+            mSignInBtn.setVisibility(GONE);
+            if (Utils.isInternetAvailable(context)) {
+                if(mProgressDialog==null)showProgressDialog();
+                new SyncFavorites().execute();
+            } else {
+                Utils.noInternetMessage(activity, "1");
+            }
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mSignInBtn.setOnClickListener(null);
+        mProgressDialog.dismiss();
     }
 
     private void getIdToken() {
@@ -116,46 +127,22 @@ public class SignInActivity extends AppCompatActivity
         startActivityForResult(signInIntent, RC_GET_TOKEN);
     }
 
-    private void signOut() {
-        GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        Log.d(LOG_TAG, "signOut:onResult:" + status);
-                        updateUI(false);
-                    }
-                });
-    }
-
-    private void revokeAccess() {
-        GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        Log.d(LOG_TAG, "revokeAccess:onResult:" + status);
-                        updateUI(false);
-                    }
-                });
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_GET_TOKEN) {
             final GoogleSignInResult result = GoogleSignInApi.getSignInResultFromIntent(data);
-            Log.i(LOG_TAG, "onActivityResult:GET_TOKEN:success:" + result.getStatus().isSuccess());
 
             if (result.isSuccess()) {
                 GoogleSignInAccount acc = result.getSignInAccount();
-                new SignInWithGoogle().execute(acc);
-            } else {
-                updateUI(false);
+                if(mProgressDialog==null)showProgressDialog();
+                new GetAccountInfoAndToken().execute(acc);
             }
         }
     }
 
-    private class SignInWithGoogle extends AsyncTask<GoogleSignInAccount, Void, Void> {
+    private class GetAccountInfoAndToken extends AsyncTask<GoogleSignInAccount, Void, Void> {
         @Override
         protected Void doInBackground(GoogleSignInAccount... params) {
             try {
@@ -174,10 +161,6 @@ public class SignInActivity extends AppCompatActivity
                 preferences.edit().putString(context.getString(R.string.pref_user_photo), photoUrl.toString()).apply();
                 preferences.edit().putString(context.getString(R.string.pref_user_name), name).apply();
 
-                Log.i(LOG_TAG, "doInBackground: "+ token);
-                Log.i(LOG_TAG, "doInBackground: "+ email);
-                Log.i(LOG_TAG, "doInBackground: "+ photoUrl.toString());
-                Log.i(LOG_TAG, "doInBackground: "+ name);
             } catch (IOException | GoogleAuthException e) {
                 e.printStackTrace();
             }
@@ -187,30 +170,77 @@ public class SignInActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            startActivity(new Intent(context, MainActivity.class));
+            if (Utils.isInternetAvailable(context)) {
+                if (mProgressDialog== null)showProgressDialog();
+                new SyncFavorites().execute();
+            } else {
+                Utils.noInternetMessage(activity, "1");
+            }
         }
     }
 
-    private void getFavorites(String idToken) throws IOException {
-        InputStream is;
-        URL url = new URL("https://www.googleapis.com/books/v1/mylibrary/bookshelves/0/volumes");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Authorization", "Bearer " + idToken);
-        conn.connect();
-        int response = conn.getResponseCode();
-        Log.i(LOG_TAG, "The response is: " + response);
-        is = conn.getInputStream();
+    public class SyncFavorites extends AsyncTask<Void, Void, Void> {
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        private boolean mCrushed;
 
-        StringBuilder builder = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
-            builder.append("\n");
+        @Override
+        protected Void doInBackground(Void... params) {
+            String token = PreferenceManager.getDefaultSharedPreferences(context)
+                    .getString(getString(R.string.pref_token), "");
+
+            try {
+                InputStream is;
+                URL url = new URL("https://www.googleapis.com/books/v1/mylibrary/bookshelves/0/volumes");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15_000);
+                conn.setConnectTimeout(15_000);
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+                conn.connect();
+                int response = conn.getResponseCode();
+                Log.i(LOG_TAG, "The response is: " + response);
+                is = conn.getInputStream();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+
+                StringBuilder builder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line);
+                    builder.append("\n");
+                }
+
+                Log.d(LOG_TAG, "doInBackground: " + builder.toString());
+
+                Book[] books = Utils.readJsonBook(builder.toString());
+                syncFavorites(books);
+            } catch (SocketTimeoutException e) {
+                mCrushed = true;
+                e.printStackTrace();
+                Utils.noInternetMessage(activity, "1");
+            } catch (IOException e) {
+                mCrushed = true;
+                e.printStackTrace();
+            }
+
+            return null;
         }
 
-        Log.i(LOG_TAG, "onActivityResult: " + builder.toString());
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (!mCrushed) startActivity(new Intent(context, MainActivity.class));
+            finish();
+        }
+    }
+
+    private void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage(getString(R.string.loading));
+            mProgressDialog.setIndeterminate(true);
+        }
+
+        mProgressDialog.show();
     }
 
     @Override
@@ -220,33 +250,48 @@ public class SignInActivity extends AppCompatActivity
         Log.d(LOG_TAG, "onConnectionFailed:" + connectionResult);
     }
 
-    private void updateUI(boolean signedIn) {
-        if (signedIn) {
-            ((TextView) findViewById(status)).setText(signed_in);
-
-            findViewById(sign_in_button).setVisibility(GONE);
-            findViewById(sign_out_and_disconnect).setVisibility(VISIBLE);
-        } else {
-            ((TextView) findViewById(status)).setText(signed_out);
-            mIdTokenTextView.setText(getString(id_token_fmt, "null"));
-
-            findViewById(sign_in_button).setVisibility(VISIBLE);
-            findViewById(sign_out_and_disconnect).setVisibility(GONE);
-        }
-    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case sign_in_button:
                 getIdToken();
                 break;
-            case sign_out_button:
-                signOut();
-                break;
-            case disconnect_button:
-                revokeAccess();
-                break;
+        }
+    }
+
+    private void syncFavorites(Book[] books) {
+        ContentResolver contentResolver = context.getContentResolver();
+
+        Cursor localBooks = contentResolver
+                .query(Favorites.CONTENT_URI, Utils.PROJECTION, null, null, null);
+
+        if (localBooks != null) {
+            while (localBooks.moveToNext()) {
+                String title = localBooks.getString(0);
+                boolean isOnline = false;
+
+                for (Book b : books) {
+                    if (b.getTitle().equals(title)) {
+                        isOnline = true;
+                        break;
+                    }
+                }
+
+                if (!isOnline) contentResolver.delete(Favorites.CONTENT_URI,
+                        Favorites.COL_TITLE + "=?", new String[]{localBooks.getString(1)});
+            }
+            localBooks.close();
+        }
+
+        for (Book b : books) {
+            String title = b.getTitle();
+            Cursor cursor = contentResolver.query(Favorites.CONTENT_URI, Utils.PROJECTION,
+                    Favorites.COL_TITLE + "=?", new String[]{title}, null);
+
+            if (cursor == null) continue;
+            if (cursor.getCount() == 0) Utils.saveToDb(contentResolver, b);
+
+            cursor.close();
         }
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iklimov.alexandria.api;
+package com.iklimov.alexandria.helpers;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -24,7 +24,7 @@ import android.graphics.Paint;
 import com.squareup.picasso.Transformation;
 
 /**
- * Created by Igor Klimov on 1/16/2016.
+ * User's image circle transformation class for Picasso
  */
 public class CircleTransform implements Transformation {
     @Override

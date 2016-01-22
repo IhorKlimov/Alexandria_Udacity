@@ -6,7 +6,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * Created by saj on 23/12/14.
+ * A class which launches all the tests
  */
 public class FullTestSuite extends TestSuite {
     public static Test suite() {
@@ -14,7 +14,4 @@ public class FullTestSuite extends TestSuite {
                 .includeAllPackagesUnderHere().build();
     }
 
-    public FullTestSuite() {
-        super();
-    }
 }

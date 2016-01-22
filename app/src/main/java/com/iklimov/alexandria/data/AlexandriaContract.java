@@ -1,89 +1,56 @@
 package com.iklimov.alexandria.data;
 
-/**
- * Created by saj on 22/12/14.
- */
 
 import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public class AlexandriaContract{
+/**
+ * Book Contract
+ */
+public class AlexandriaContract {
 
     public static final String CONTENT_AUTHORITY = "com.iklimov.alexandria";
-
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final String PATH_FAVORITES = "favorites";
 
-    public static final String PATH_BOOKS = "books";
-    public static final String PATH_AUTHORS = "authors";
-    public static final String PATH_CATEGORIES = "categories";
+    public static final class Favorites implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVORITES).build();
 
-    public static final String PATH_FULLBOOK = "fullbook";
+        public static final String TABLE_NAME = "favorites";
+        public static final String COL_TITLE = "title";
+        public static final String COL_IMAGE_URL = "imgurl";
+        public static final String COL_DESC = "description";
+        public static final String COL_AUTHORS = "authors";
+        public static final String COL_PAGES = "pages";
+        public static final String COL_CATEGORIES = "categories";
+        public static final String COL_RATING = "rating";
+        public static final String COL_SHARE_LINK = "link";
+        public static final String COL_VOLUME_ID = "volume_id";
 
-    public static final class BookEntry implements BaseColumns {
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_BOOKS).build();
-
-        public static final Uri FULL_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_FULLBOOK).build();
-
-        public static final String CONTENT_TYPE =
-                "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/" + PATH_BOOKS;
-        public static final String CONTENT_ITEM_TYPE =
-                "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/" + PATH_BOOKS;
-
-        public static final String TABLE_NAME = "books";
-
-        public static final String TITLE = "title";
-
-        public static final String IMAGE_URL = "imgurl";
-
-        public static final String SUBTITLE = "subtitle";
-
-        public static final String DESC = "description";
 
         public static Uri buildBookUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildFullBookUri(long id) {
-            return ContentUris.withAppendedId(FULL_CONTENT_URI, id);
+        public static String getIdFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
         }
 
-    }
+        public static final String SQL_CREATE_FAVORITES_TABLE =
+                "CREATE TABLE " + AlexandriaContract.Favorites.TABLE_NAME + " (" +
+                        Favorites._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                        Favorites.COL_TITLE + " TEXT NOT NULL," +
+                        Favorites.COL_IMAGE_URL + " TEXT ," +
+                        Favorites.COL_DESC + " TEXT ," +
+                        Favorites.COL_RATING + " TEXT ," +
+                        Favorites.COL_CATEGORIES + " TEXT ," +
+                        Favorites.COL_PAGES + " TEXT ," +
+                        Favorites.COL_SHARE_LINK + " TEXT ," +
+                        Favorites.COL_AUTHORS + " TEXT , "+
+                        Favorites.COL_VOLUME_ID + " TEXT );";
 
-    public static final class AuthorEntry implements BaseColumns {
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
-                .appendPath(PATH_AUTHORS).build();
-
-        public static final String CONTENT_TYPE =
-                "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/" + PATH_AUTHORS;
-        public static final String CONTENT_ITEM_TYPE =
-                "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/" + PATH_AUTHORS;
-
-        public static final String TABLE_NAME = "authors";
-
-        public static final String AUTHOR = "author";
-
-        public static Uri buildAuthorUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
-        }
-    }
-
-    public static final class CategoryEntry implements BaseColumns {
-        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()
-                .appendPath(PATH_CATEGORIES).build();
-
-        public static final String CONTENT_TYPE =
-                "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/" + PATH_CATEGORIES;
-        public static final String CONTENT_ITEM_TYPE =
-                "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/" + PATH_CATEGORIES;
-
-        public static final String TABLE_NAME = "categories";
-
-        public static final String CATEGORY = "category";
-
-        public static Uri buildCategoryUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
-        }
-
+        public static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME + ";";
     }
 }

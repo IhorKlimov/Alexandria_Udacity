@@ -1,27 +1,20 @@
 package com.iklimov.alexandria;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
-import com.iklimov.alexandria.data.AlexandriaContract;
-import com.iklimov.alexandria.data.DbHelper;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.iklimov.alexandria.data.AlexandriaContract.Favorites;
 
 
 /**
- * Created by saj on 23/12/14.
+ * Test class for my Data Base
  */
 public class TestDb extends AndroidTestCase {
     private static final String LOG_TAG = "TestDb";
 
-    public final static long ean = 9780137903955L;
     public final static String title = "Artificial Intelligence";
     public final static String subtitle = "A Modern Approach";
     public final static String imgUrl = "http://books.google.com/books/content?id=KI2WQgAACAAJ&printsec=frontcover&img=1&zoom=1";
@@ -29,159 +22,89 @@ public class TestDb extends AndroidTestCase {
     public final static String author = "Stuart Jonathan Russell";
     public final static String category = "Computers";
 
-    public void testCreateDb() throws Throwable {
-        mContext.deleteDatabase(DbHelper.DATABASE_NAME);
-        SQLiteDatabase db = new DbHelper(
-                this.mContext).getWritableDatabase();
-        assertEquals(true, db.isOpen());
-        db.close();
-    }
+    private final String[] mProjection = {
+            Favorites.COL_TITLE, Favorites.COL_IMAGE_URL, Favorites.COL_AUTHORS, Favorites.COL_DESC
+    };
 
-    public void testInsertReadDb() {
+    /*public void testInsert() {
+        getContext().deleteDatabase(DbHelper.DATABASE_NAME);
+        ContentResolver contentResolver = getContext().getContentResolver();
 
-//        DbHelper dbHelper = new DbHelper(mContext);
-//        SQLiteDatabase db = dbHelper.getWritableDatabase();
-//
-//        ContentValues values = getBookValues();
-//
-//        long retEan = db.insert(AlexandriaContract.BookEntry.TABLE_NAME, null, values);
-//        assertEquals(ean, retEan);
-//
-//        String[] columns = {
-//                AlexandriaContract.BookEntry._ID,
-//                AlexandriaContract.BookEntry.TITLE,
-//                AlexandriaContract.BookEntry.IMAGE_URL,
-//                AlexandriaContract.BookEntry.SUBTITLE,
-//                AlexandriaContract.BookEntry.DESC
-//        };
-//
-//        // A cursor is your primary interface to the query results.
-//        Cursor cursor = db.query(
-//                AlexandriaContract.BookEntry.TABLE_NAME,  // Table to Query
-//                columns,
-//                null, // Columns for the "where" clause
-//                null, // Values for the "where" clause
-//                null, // columns to group by
-//                null, // columns to filter by row groups
-//                null // sort order
-//        );
-//
-//        validateCursor(cursor, values);
-//
-//        values = getAuthorValues();
-//
-//
-//        retEan = db.insert(AlexandriaContract.AuthorEntry.TABLE_NAME, null, values);
-//
-//        columns = new String[]{
-//                AlexandriaContract.AuthorEntry._ID,
-//                AlexandriaContract.AuthorEntry.AUTHOR
-//        };
-//
-//        cursor = db.query(
-//                AlexandriaContract.AuthorEntry.TABLE_NAME,  // Table to Query
-//                columns,
-//                null, // Columns for the "where" clause
-//                null, // Values for the "where" clause
-//                null, // columns to group by
-//                null, // columns to filter by row groups
-//                null // sort order
-//        );
-//
-//        validateCursor(cursor, values);
-//        // test category table
-//
-//        values = getCategoryValues();
-//        retEan = db.insert(AlexandriaContract.CategoryEntry.TABLE_NAME, null, values);
-//
-//        columns = new String[]{
-//                AlexandriaContract.CategoryEntry._ID,
-//                AlexandriaContract.CategoryEntry.CATEGORY
-//        };
-//
-//        cursor = db.query(
-//                AlexandriaContract.CategoryEntry.TABLE_NAME,  // Table to Query
-//                columns,
-//                null, // Columns for the "where" clause
-//                null, // Values for the "where" clause
-//                null, // columns to group by
-//                null, // columns to filter by row groups
-//                null // sort order
-//        );
-//
-//        validateCursor(cursor, values);
-//
-//        dbHelper.close();
+        ContentValues values = new ContentValues();
+        values.put(Favorites.COL_TITLE, title);
+        values.put(Favorites.COL_IMAGE_URL, imgUrl);
+        values.put(Favorites.COL_DESC, desc);
+        values.put(Favorites.COL_AUTHORS, author);
 
+        Uri insert = contentResolver.insert(Favorites.CONTENT_URI, values);
+        assertTrue(insert != null);
+        Log.d(LOG_TAG, "testInsert: " + insert.toString());
+    }*/
 
+    /*public void testQuery() {
+        ContentResolver contentResolver = getContext().getContentResolver();
 
+        Cursor cursor = contentResolver.query(Favorites.CONTENT_URI, mProjection, null, null, null);
+        assertTrue(cursor != null);
+        assertTrue(cursor.moveToFirst());
+        assertTrue(cursor.getCount() == 1);
+        Log.d(LOG_TAG, "testQuery: "+ cursor.getString(0));
+        Log.d(LOG_TAG, "testQuery: "+ cursor.getString(1));
+        Log.d(LOG_TAG, "testQuery: "+ cursor.getString(2));
+        Log.d(LOG_TAG, "testQuery: "+ cursor.getString(3));
+
+        cursor.close();
+    }*/
+
+    public void testBulkInsert() {
+        ContentResolver contentResolver = getContext().getContentResolver();
+
+        ContentValues v1 = new ContentValues();
+        v1.put(Favorites.COL_TITLE, title);
+        v1.put(Favorites.COL_IMAGE_URL, imgUrl);
+        v1.put(Favorites.COL_DESC, desc);
+        v1.put(Favorites.COL_AUTHORS, author);
+
+        ContentValues v2 = new ContentValues();
+        v2.put(Favorites.COL_TITLE, "Second Title");
+        v2.put(Favorites.COL_IMAGE_URL, "Second Imagee Url");
+        v2.put(Favorites.COL_DESC, "Second Desc");
+        v2.put(Favorites.COL_AUTHORS, "Second Author");
+
+        ContentValues[] values = {v1, v2};
+        int bulkInsert = contentResolver.bulkInsert(Favorites.CONTENT_URI, values);
+        assertTrue(bulkInsert == 2);
+
+        Cursor cursor = contentResolver.query(Favorites.CONTENT_URI, mProjection, null, null, null);
+        assertTrue(cursor != null);
+        assertTrue(cursor.moveToFirst());
+        assertTrue(cursor.getCount() == 2);
+
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(0));
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(1));
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(2));
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(3));
+
+        assertTrue(cursor.moveToNext());
+
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(0));
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(1));
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(2));
+        Log.d(LOG_TAG, "testBulkInsert: " + cursor.getString(3));
 
     }
 
-    static void validateCursor(Cursor valueCursor, ContentValues expectedValues) {
+    /*public void testDelete() {
+        ContentResolver contentResolver = getContext().getContentResolver();
 
-        assertTrue(valueCursor.moveToFirst());
+        int delete = contentResolver.delete(Favorites.CONTENT_URI, null, null);
+        assertTrue(delete == 1);
 
-        Set<Map.Entry<String, Object>> valueSet = expectedValues.valueSet();
-        for (Map.Entry<String, Object> entry : valueSet) {
-            String columnName = entry.getKey();
-            int idx = valueCursor.getColumnIndex(columnName);
-            assertFalse(columnName,idx == -1);
-            String expectedValue = entry.getValue().toString();
-            assertEquals(expectedValue, valueCursor.getString(idx));
-        }
-        valueCursor.close();
-    }
+        Cursor cursor = contentResolver.query(Favorites.CONTENT_URI, mProjection, null, null, null);
+        assertTrue(cursor != null);
+        assertTrue(cursor.getCount() == 0);
+        cursor.close();
+    }*/
 
-    public static ContentValues getBookValues() {
 
-        final ContentValues values = new ContentValues();
-        values.put(AlexandriaContract.BookEntry._ID, ean);
-        values.put(AlexandriaContract.BookEntry.TITLE, title);
-        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
-        values.put(AlexandriaContract.BookEntry.SUBTITLE, subtitle);
-        values.put(AlexandriaContract.BookEntry.DESC, desc);
-
-        return values;
-    }
-
-    public static ContentValues getAuthorValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.AuthorEntry._ID, ean);
-        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
-
-        return values;
-    }
-
-    public static ContentValues getCategoryValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.CategoryEntry._ID, ean);
-        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
-
-        return values;
-    }
-
-    public static ContentValues getFullDetailValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.BookEntry.TITLE, title);
-        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
-        values.put(AlexandriaContract.BookEntry.SUBTITLE, subtitle);
-        values.put(AlexandriaContract.BookEntry.DESC, desc);
-        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
-        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
-        return values;
-    }
-
-    public static ContentValues getFullListValues() {
-
-        final ContentValues values= new ContentValues();
-        values.put(AlexandriaContract.BookEntry.TITLE, title);
-        values.put(AlexandriaContract.BookEntry.IMAGE_URL, imgUrl);
-        values.put(AlexandriaContract.AuthorEntry.AUTHOR, author);
-        values.put(AlexandriaContract.CategoryEntry.CATEGORY, category);
-        return values;
-    }
 }

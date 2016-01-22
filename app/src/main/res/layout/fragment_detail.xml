@@ -1,0 +1,126 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/details"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar">
+
+        <android.support.v7.widget.GridLayout
+            android:id="@+id/grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:columnCount="2">
+
+            <ImageView
+                android:id="@+id/details_poster"
+                android:layout_width="100dp"
+                android:layout_height="150dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:contentDescription="@string/book_poster_desc"
+                android:transitionName="@string/detail_poster_transition_name"
+                android:visibility="invisible"
+                app:layout_rowSpan="2" />
+
+            <TextView
+                android:id="@+id/title"
+                style="@style/DetailsTitle"
+                android:layout_width="0dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:gravity="center_horizontal"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:textColor="@color/primary_text"
+                app:layout_gravity="fill_horizontal" />
+
+            <TextView
+                android:id="@+id/authors"
+                style="@style/DetailsTextMedium"
+                android:layout_width="0dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/details_grid_vertical_margin"
+                android:gravity="center_horizontal"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:textColor="@color/secondary_text"
+                app:layout_gravity="fill_horizontal" />
+
+            <View
+                android:layout_height="@dimen/details_divider_height"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:background="@color/divider"
+                app:layout_columnSpan="2" />
+
+            <RatingBar
+                style="?android:ratingBarStyleSmall"
+                android:id="@+id/rating_bar"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:numStars="5"
+                android:stepSize="0.5"
+                app:layout_columnSpan="2" />
+
+            <TextView
+                android:id="@+id/categories"
+                style="@style/DetailsTextSmall"
+                android:layout_marginTop="@dimen/details_grid_vertical_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                app:layout_columnSpan="2" />
+
+            <TextView
+                android:id="@+id/page_count"
+                style="@style/DetailsTextSmall"
+                android:layout_marginTop="@dimen/details_grid_vertical_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                app:layout_columnSpan="2" />
+
+            <TextView
+                android:id="@+id/description"
+                style="@style/PlotText"
+                android:layout_marginTop="@dimen/details_grid_vertical_margin"
+                android:fontFamily="sans-serif-light"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                app:layout_columnSpan="2" />
+
+        </android.support.v7.widget.GridLayout>
+    </ScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:src="@drawable/favorites_empty"
+        app:elevation="6dp"
+        app:fabSize="normal" />
+
+</RelativeLayout>
