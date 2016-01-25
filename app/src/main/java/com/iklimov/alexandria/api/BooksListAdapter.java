@@ -39,7 +39,6 @@ public class BooksListAdapter extends RecyclerView.Adapter<Holder> {
     public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
         View inflate = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.books_list_item, parent, false);
-        Log.d(LOG_TAG, "onCreateViewHolder:kkk ");
         return new Holder(inflate, mContext, mSearchResults, new Holder.BookAdapterOnClickHandler() {
             @Override
             public void onClick(Uri uri, ArrayList<Book> searchResults, Holder holder) {

@@ -62,6 +62,8 @@ public class Utils {
     private static final String IMG_URL = "thumbnail";
     private static final String SHARE_LINK = "infoLink";
     private static final String VOLUME_ID = "id";
+    private static final String PREVIEW_LINK = "previewLink";
+
 
     public static final String[] PROJECTION = {
             AlexandriaContract.Favorites._ID,
@@ -73,7 +75,9 @@ public class Utils {
             AlexandriaContract.Favorites.COL_RATING,
             AlexandriaContract.Favorites.COL_PAGES,
             AlexandriaContract.Favorites.COL_SHARE_LINK,
-            AlexandriaContract.Favorites.COL_VOLUME_ID
+            AlexandriaContract.Favorites.COL_VOLUME_ID,
+            AlexandriaContract.Favorites.COL_PREVIEW_LINK
+
     };
 
     public static Uri saveToDb(ContentResolver contentResolver, Book b) {
@@ -87,6 +91,7 @@ public class Utils {
         values.put(AlexandriaContract.Favorites.COL_CATEGORIES, b.getCategories());
         values.put(AlexandriaContract.Favorites.COL_SHARE_LINK, b.getShareLink());
         values.put(AlexandriaContract.Favorites.COL_VOLUME_ID, b.getVolumeId());
+        values.put(AlexandriaContract.Favorites.COL_PREVIEW_LINK, b.getPreviewLink());
         return contentResolver.insert(AlexandriaContract.Favorites.CONTENT_URI, values);
     }
 
@@ -125,9 +130,7 @@ public class Utils {
         ConnectivityManager systemService = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = systemService.getActiveNetworkInfo();
-        boolean r = activeNetworkInfo != null && activeNetworkInfo.isConnected();
-        Log.d(LOG_TAG, "isInternetAvailable() returned: " + r);
-        return r;
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     public static void noInternetMessage(AppCompatActivity activity, String tag) {
@@ -138,6 +141,7 @@ public class Utils {
 
     public static Book[] readJsonBook(String jsonBook) {
         try {
+            if (jsonBook == null || !jsonBook.contains(ITEMS)) return null;
             JSONArray bookArray = new JSONObject(jsonBook).getJSONArray(ITEMS);
             int length = bookArray.length();
             Book[] res = new Book[length];
@@ -155,13 +159,19 @@ public class Utils {
                 String categories = getCategories(bookInfo);
                 String shareLink = getShareLink(bookInfo);
                 String volumeId = getVolumeId(item);
-                res[i] = new Book(title, a, imgUrl, desc, rating, pageCount, categories, shareLink, volumeId);
+                String previewLink = getPreviewLink(bookInfo);
+                res[i] = new Book(title, a, imgUrl, desc, rating, pageCount, categories,
+                        shareLink, volumeId, previewLink);
             }
             return res;
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Error ", e);
         }
         return null;
+    }
+
+    private static String getPreviewLink(JSONObject item) throws JSONException {
+        return item.getString(PREVIEW_LINK);
     }
 
     private static String getVolumeId(JSONObject item) throws JSONException {
@@ -246,6 +256,17 @@ public class Utils {
         return isFavorite;
     }
 
+    public static long getFirstItemId(Context context) {
+        long id = -1;
+        Cursor query = context.getContentResolver().query(AlexandriaContract.Favorites.CONTENT_URI,
+                PROJECTION, null, null, null);
+        if (query != null && query.moveToFirst()) {
+            id = query.getLong(0);
+            query.close();
+        }
+        return id;
+    }
+
     private static class SaveToTheCloud extends AsyncTask<String, Void, Void> {
 
         @Override
@@ -303,6 +324,5 @@ public class Utils {
             return null;
         }
     }
-
 
 }

@@ -6,7 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -19,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity
     private static final String LOG_TAG = "MainActivity";
     public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
     public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
+    private static final String DETAILFRAGMENT_TAG = "Detail Fragment";
     public static boolean sIsTablet = false;
 
     private CharSequence mTitle;
@@ -60,21 +63,27 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sIsTablet = isTablet();
-         setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
+        sIsTablet = findViewById(R.id.details_fragment) != null;
         context = this;
         Stetho.initializeWithDefaults(context);
 
         mFragmentManager = getSupportFragmentManager();
         mFragmentManager.beginTransaction()
-                .replace(R.id.container, new SearchBookFragment())
+                .replace(R.id.search_view, new SearchBookFragment())
                 .commit();
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        mToolbar.setTitle(getString(R.string.find_a_book));
+        if (sIsTablet) getSupportActionBar().setDisplayShowTitleEnabled(false);
+        else mToolbar.setTitle(getString(R.string.find_a_book));
 
+        TextView appTitle = (TextView) findViewById(R.id.app_title);
+        if (appTitle != null) {
+            Typeface typeface = Typeface.createFromAsset(getAssets(), "fonts/Gabrielle.ttf");
+            appTitle.setTypeface(typeface);
+        }
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, mDrawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
@@ -124,34 +133,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-//        if (!navigationDrawerFragment.isDrawerOpen()) {
-//             Only show items in the action bar relevant to this screen
-//             if the drawer is not showing. Otherwise, let the drawer
-//             decide what to show in the action bar.
-//            getMenuInflater().inflate(R.menu.main, menu);
-//            restoreActionBar();
-//            return true;
-//        }
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-//        if (id == R.id.action_settings) {
-//            startActivity(new Intent(this, SettingsActivity.class));
-//            return true;
-//        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         super.onDestroy();
@@ -164,6 +145,27 @@ public class MainActivity extends AppCompatActivity
                     .putExtra(BookDetailFragment.BOOK_POSITION, holder.getAdapterPosition());
             intent.putParcelableArrayListExtra(BookDetailFragment.SEARCH_RESULT, searchResult);
             startActivity(intent);
+        } else {
+            showDetailsForTablet(uri, searchResult, holder.getAdapterPosition());
+        }
+    }
+
+    public void showDetailsForTablet(Uri uri, ArrayList<Book> searchResult, int position) {
+        Log.d(LOG_TAG, "showDetailsForTablet: ");
+        if (uri == null && searchResult == null) {
+            Fragment f = getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+            if (f != null) mFragmentManager.beginTransaction().remove(f).commit();
+        } else {
+            BookDetailFragment fr = new BookDetailFragment();
+            Bundle args = new Bundle();
+            args.putParcelable(BookDetailFragment.BOOK_URI, uri);
+            args.putParcelable(BookDetailFragment.BOOK_PARCELABLE,
+                    searchResult != null
+                            ? searchResult.get(position)
+                            : null);
+            fr.setArguments(args);
+            mFragmentManager.beginTransaction().replace(R.id.details_fragment, fr,
+                    DETAILFRAGMENT_TAG).commit();
         }
     }
 
@@ -173,21 +175,35 @@ public class MainActivity extends AppCompatActivity
 
         switch (item.getItemId()) {
             case R.id.my_books:
-                mToolbar.setTitle(getString(R.string.my_books));
+                if (!sIsTablet) {
+                    mToolbar.setTitle(getString(R.string.my_books));
+                } else {
+                    Fragment f = getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+                    if (f != null) mFragmentManager.beginTransaction().remove(f).commit();
+                }
                 nextFragment = new MyBooksListFragment();
                 break;
             case R.id.search_book:
-                mToolbar.setTitle(getString(R.string.find_a_book));
+                if (!sIsTablet) {
+                    mToolbar.setTitle(getString(R.string.find_a_book));
+                } else {
+                    Fragment f = getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+                    if (f != null) mFragmentManager.beginTransaction().remove(f).commit();
+                }
                 nextFragment = new SearchBookFragment();
                 break;
             case R.id.about:
-                mToolbar.setTitle(getString(R.string.about));
+                if (!sIsTablet) {
+                    mToolbar.setTitle(getString(R.string.about));
+                } else {
+                    Fragment f = getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+                    if (f != null)  mFragmentManager.beginTransaction().remove(f).commit();
+                }
                 nextFragment = new AboutFragment();
         }
 
         mFragmentManager.beginTransaction()
-                .replace(R.id.container, nextFragment)
-                .addToBackStack(null)
+                .replace(R.id.search_view, nextFragment)
                 .commit();
 
         mDrawer.closeDrawer(GravityCompat.START);
@@ -202,12 +218,6 @@ public class MainActivity extends AppCompatActivity
                         Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    private boolean isTablet() {
-        return (getApplicationContext().getResources().getConfiguration().screenLayout
-                & Configuration.SCREENLAYOUT_SIZE_MASK)
-                >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
 
     @Override

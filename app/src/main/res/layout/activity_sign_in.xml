@@ -5,8 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/lime_700"
     android:orientation="vertical"
-    android:weightSum="4"
-    tools:context=".legacy.MainActivity">
+    android:weightSum="4">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -17,9 +16,9 @@
             android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableTop="@drawable/ic_launcher"
-            android:drawablePadding="10dp"
             android:layout_gravity="center"
+            android:drawablePadding="10dp"
+            android:drawableTop="@drawable/ic_launcher"
             android:text="@string/title_text"
             android:textColor="#ffffff"
             android:textSize="36sp" />
@@ -38,6 +37,5 @@
             android:layout_gravity="center"
             android:visibility="visible"
             tools:visibility="gone" />
-
     </FrameLayout>
 </LinearLayout>

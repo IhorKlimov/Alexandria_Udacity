@@ -60,10 +60,6 @@ public class Holder extends RecyclerView.ViewHolder implements View.OnClickListe
         mHandler.onClick(AlexandriaContract.Favorites.buildBookUri(id), mSearchResults, this);
     }
 
-    public ImageView getImage() {
-        return image;
-    }
-
     public interface BookAdapterOnClickHandler {
         void onClick(Uri uri, ArrayList<Book> searchResult, Holder holder);
     }

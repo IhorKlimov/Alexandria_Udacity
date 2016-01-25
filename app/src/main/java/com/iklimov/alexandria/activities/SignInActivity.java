@@ -72,26 +72,17 @@ public class SignInActivity extends AppCompatActivity
         context = this;
         activity = this;
 
-        // Views
         mSignInBtn = findViewById(sign_in_button);
         mSignInBtn.setOnClickListener(this);
 
-        // [START configure_signin]
-        // Request only the user's ID token, which can be used to identify the
-        // user securely to your backend. This will contain the user's basic
-        // profile (name, profile picture URL, etc) so you should not need to
-        // make an additional call to personalize your application.
         GoogleSignInOptions gso = new Builder(DEFAULT_SIGN_IN)
                 .requestIdToken(BuildConfig.MY_CLIENT_ID)
                 .requestScopes(new Scope(BOOKS_API_SCOPE))
                 .requestEmail()
                 .build();
 
-        // [END configure_signin]
-
-        // Build GoogleAPIClient with the Google Sign-In API and the above options.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                .enableAutoManage(this, this)
                 .addApi(GOOGLE_SIGN_IN_API, gso)
                 .build();
     }
@@ -104,7 +95,7 @@ public class SignInActivity extends AppCompatActivity
         if (silentSignIn.isDone()) {
             mSignInBtn.setVisibility(GONE);
             if (Utils.isInternetAvailable(context)) {
-                if(mProgressDialog==null)showProgressDialog();
+                if (mProgressDialog == null) showProgressDialog();
                 new SyncFavorites().execute();
             } else {
                 Utils.noInternetMessage(activity, "1");
@@ -116,13 +107,10 @@ public class SignInActivity extends AppCompatActivity
     protected void onStop() {
         super.onStop();
         mSignInBtn.setOnClickListener(null);
-        mProgressDialog.dismiss();
+        if (mProgressDialog != null) mProgressDialog.dismiss();
     }
 
     private void getIdToken() {
-        // Show an account picker to let the user choose a Google account from the device.
-        // If the GoogleSignInOptions only asks for IDToken and/or profile and/or email then no
-        // consent screen will be shown here.
         Intent signInIntent = GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_GET_TOKEN);
     }
@@ -136,7 +124,7 @@ public class SignInActivity extends AppCompatActivity
 
             if (result.isSuccess()) {
                 GoogleSignInAccount acc = result.getSignInAccount();
-                if(mProgressDialog==null)showProgressDialog();
+                if (mProgressDialog == null) showProgressDialog();
                 new GetAccountInfoAndToken().execute(acc);
             }
         }
@@ -171,7 +159,7 @@ public class SignInActivity extends AppCompatActivity
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             if (Utils.isInternetAvailable(context)) {
-                if (mProgressDialog== null)showProgressDialog();
+                if (mProgressDialog == null) showProgressDialog();
                 new SyncFavorites().execute();
             } else {
                 Utils.noInternetMessage(activity, "1");
@@ -212,7 +200,7 @@ public class SignInActivity extends AppCompatActivity
                 Log.d(LOG_TAG, "doInBackground: " + builder.toString());
 
                 Book[] books = Utils.readJsonBook(builder.toString());
-                syncFavorites(books);
+                if (books != null) syncFavorites(books);
             } catch (SocketTimeoutException e) {
                 mCrushed = true;
                 e.printStackTrace();
@@ -254,7 +242,8 @@ public class SignInActivity extends AppCompatActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case sign_in_button:
-                getIdToken();
+                if (Utils.isInternetAvailable(this)) getIdToken();
+                else Utils.noInternetMessage(this, "1");
                 break;
         }
     }

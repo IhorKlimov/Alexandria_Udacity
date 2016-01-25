@@ -2,10 +2,13 @@ package com.iklimov.alexandria.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -13,6 +16,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -22,8 +26,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +38,8 @@ import com.iklimov.alexandria.R;
 import com.iklimov.alexandria.activities.DetailActivity;
 import com.iklimov.alexandria.activities.MainActivity;
 import com.iklimov.alexandria.api.Book;
+import com.iklimov.alexandria.data.AlexandriaContract;
+import com.iklimov.alexandria.data.AlexandriaContract.Favorites;
 import com.iklimov.alexandria.helpers.Utils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -55,19 +64,21 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
     private TextView mDescription;
     private ImageView mPoster;
     private RatingBar mRatingBar;
+    private Button mPreviewBtn;
 
     private String mShareLink;
-    private String mBookUri;
+    private Uri mBookUri;
     private FloatingActionButton mFab;
     private boolean mInserted;
     private Book mBook;
-    private boolean mToRemove;
+    private ScrollView mScrollView;
+    private String mPreviewLink;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        if (!MainActivity.sIsTablet) setHasOptionsMenu(true);
     }
 
     @Override
@@ -82,35 +93,80 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mPageCount = (TextView) rootView.findViewById(R.id.page_count);
         mDescription = (TextView) rootView.findViewById(R.id.description);
         mRatingBar = (RatingBar) rootView.findViewById(R.id.rating_bar);
+        mToolbar = (Toolbar) rootView.findViewById(R.id.details_toolbar);
+        mScrollView = (ScrollView) rootView.findViewById(R.id.scrollView);
+        mPreviewBtn = (Button) rootView.findViewById(R.id.preview);
 
         Bundle args = getArguments();
-        mBookUri = args.getString(BOOK_URI);
+        mBookUri = args.getParcelable(BOOK_URI);
         mBook = args.getParcelable(BOOK_PARCELABLE);
-
-        if (mBook != null) setupUi(null);
 
         mFab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         mFab.setOnClickListener(this);
 
         setupToolbar();
+        if (MainActivity.sIsTablet) setupParallaxToolbar();
         return rootView;
     }
 
+    private void setupParallaxToolbar() {
+        final boolean isPortrait = mContext.getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_PORTRAIT;
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.getViewTreeObserver().addOnScrollChangedListener(
+                        new ViewTreeObserver.OnScrollChangedListener() {
+                            int j = mToolbar.getHeight();
+
+                            @Override
+                            public void onScrollChanged() {
+                                int i = mScrollView.getScrollY();
+                                float k = -mToolbar.getTranslationY();
+                                int n = -(i / 2);
+                                mToolbar.setTranslationY(n);
+//                                if (!isPortrait) {
+//                                    if (j + k >= b) {
+//                                        int i2 = -(j - (n + b));
+//                                        mToolbar.setTranslationY(Math.min(0, i2));
+//                                    }
+//                                } else {
+//                                    int i2 = (b - i - j);
+//                                    bar.setTranslationY(Math.min(0, i2));
+//                                }
+                            }
+                        });
+            }
+        }, 300);
+    }
+
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.book_detail, menu);
-        finishCreatingMenu(menu);
+        if (!MainActivity.sIsTablet) {
+            inflater.inflate(R.menu.book_detail, menu);
+            finishCreatingMenu(menu);
+        }
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (mBookUri != null) getLoaderManager().initLoader(LOADER_ID, null, this);
+        if (mBookUri != null) {
+            getLoaderManager().initLoader(LOADER_ID, null, this);
+        }
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (mBook != null) setupUi(null);
+
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(mContext, Uri.parse(mBookUri), Utils.PROJECTION, null, null, null);
+        return new CursorLoader(mContext, mBookUri, Utils.PROJECTION, null, null, null);
     }
 
     @Override
@@ -135,9 +191,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         Callback callback = new Callback() {
             @Override
             public void onSuccess() {
-//                setTransitionName();
                 mPoster.setVisibility(View.VISIBLE);
-//                if (!MainActivity.sIsTablet) getActivity().supportStartPostponedEnterTransition();
             }
 
             @Override
@@ -154,9 +208,10 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
             desc = data.getString(4);
             rating = data.getFloat(6);
             img = data.getString(2);
+            mPreviewLink = data.getString(10);
             mShareLink = data.getString(8);
             mBook = new Book(title, authors, img, desc, rating, pageCount, categories,
-                    mShareLink, data.getString(9));
+                    mShareLink, data.getString(9), mPreviewLink);
         } else {
             title = mBook.getTitle();
             authors = mBook.getAuthors();
@@ -166,6 +221,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
             rating = mBook.getRating();
             img = mBook.getImageThumbnail();
             mShareLink = mBook.getShareLink();
+            mPreviewLink = mBook.getPreviewLink();
         }
         if (Utils.isFavorite(mContext, mBook) && !DetailActivity.sBooksToRemove.contains(mBook)) {
             mFab.setImageResource(R.drawable.favorites);
@@ -181,6 +237,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
         mRatingBar.setRating(rating);
         if (!img.equals("")) Picasso.with(mContext).load(img).into(mPoster, callback);
         else Picasso.with(mContext).load(R.drawable.ic_launcher).into(mPoster, callback);
+        if (mPreviewLink != null) mPreviewBtn.setOnClickListener(this);
 
         if (mActionProvider != null) mActionProvider.setShareIntent(createShareIntent());
     }
@@ -196,14 +253,14 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
 
     private void finishCreatingMenu(Menu menu) {
         MenuItem item = menu.findItem(R.id.action_share);
-//        if (!isTabletPreference(context)) {
+//        if (MainActivity.sIsTablet) {
 //            mActionProvider = new ShareActionProvider(getActivity()) {
 //                @Override
 //                public View onCreateActionView() {
 //                    return null;
 //                }
 //            };
-//            item.setIcon(R.drawable.ic_share);
+//            item.setIcon(R.drawable.share_24dp);
 //        } else {
         mActionProvider = new ShareActionProvider(getActivity());
 //        }
@@ -229,8 +286,7 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
                         mFab.setImageResource(R.drawable.favorites);
                         if (MainActivity.sIsTablet) {
                             Utils.addToFavorites(mContext, mBook);
-                        }
-                        else {
+                        } else {
                             DetailActivity.sBooksToRemove.remove(mBook);
                             DetailActivity.sBooksToAdd.add(mBook);
                         }
@@ -247,10 +303,6 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
                         if (MainActivity.sIsTablet) {
                             Utils.removeFromFavorites(mContext, mBook);
 //                            MoviesGridFragment.sId = Utility.getId(context);
-//                            if (isTabletPreference(context)
-//                                    && Utility.getSortByPreference(context) == 4) {
-//                                MainActivity activity = (MainActivity) context;
-//                                activity.showDetails(MovieContract.FavoriteMovie.buildMovieUri(MoviesGridFragment.sId));
                         } else {
                             DetailActivity.sBooksToRemove.add(mBook);
                             DetailActivity.sBooksToAdd.remove(mBook);
@@ -259,6 +311,9 @@ public class BookDetailFragment extends Fragment implements LoaderManager.Loader
                     }
                 }
                 break;
+            case R.id.preview:
+                Intent previewIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(mPreviewLink));
+                mContext.startActivity(previewIntent);
         }
     }
 }

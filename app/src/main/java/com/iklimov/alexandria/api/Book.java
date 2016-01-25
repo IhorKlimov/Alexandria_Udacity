@@ -34,9 +34,11 @@ public class Book implements Parcelable {
     String categories;
     String shareLink;
     String volumeId;
+    String previewLink;
 
     public Book(String title, String authors, String imageThumbnail, String description,
-                float rating, String pageCount, String categories, String shareLink, String volumeId) {
+                float rating, String pageCount, String categories, String shareLink,
+                String volumeId, String previewLink) {
         this.title = title;
         this.authors = authors;
         this.imageThumbnail = imageThumbnail;
@@ -46,6 +48,7 @@ public class Book implements Parcelable {
         this.categories = categories;
         this.shareLink = shareLink;
         this.volumeId = volumeId;
+        this.previewLink = previewLink;
     }
 
     private Book(Parcel in) {
@@ -58,6 +61,7 @@ public class Book implements Parcelable {
         categories = in.readString();
         shareLink = in.readString();
         volumeId = in.readString();
+        previewLink = in.readString();
     }
 
     public String getTitle() {
@@ -92,6 +96,10 @@ public class Book implements Parcelable {
         return shareLink;
     }
 
+    public String getPreviewLink() {
+        return previewLink;
+    }
+
     public String getVolumeId() {
         Log.d(LOG_TAG, "getVolumeId() returned: " + volumeId);
         return volumeId;
@@ -113,6 +121,7 @@ public class Book implements Parcelable {
         dest.writeString(categories);
         dest.writeString(shareLink);
         dest.writeString(volumeId);
+        dest.writeString(previewLink);
     }
 
     public static final Creator CREATOR = new Creator<Book>() {

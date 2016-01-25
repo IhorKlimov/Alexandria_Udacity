@@ -27,7 +27,7 @@
             android:name=".activities.MainActivity"
             android:configChanges="orientation"
             android:label="@string/find_a_book"
-            android:windowSoftInputMode="stateHidden|adjustResize" />
+            android:windowSoftInputMode="stateHidden|adjustPan" />
 
         <activity
             android:name=".activities.DetailActivity"

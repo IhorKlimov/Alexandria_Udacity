@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -16,8 +17,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.iklimov.alexandria.R;
+import com.iklimov.alexandria.activities.MainActivity;
 import com.iklimov.alexandria.api.BooksListAdapter;
 import com.iklimov.alexandria.data.AlexandriaContract;
+import com.iklimov.alexandria.data.AlexandriaContract.Favorites;
 import com.iklimov.alexandria.helpers.Utils;
 
 
@@ -28,8 +31,6 @@ public class MyBooksListFragment extends Fragment implements LoaderManager.Loade
     private BooksListAdapter mBooksListAdapter;
     private RecyclerView mMyBooksList;
     private Context mContext;
-    private boolean mHoldForTransition;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,7 +42,7 @@ public class MyBooksListFragment extends Fragment implements LoaderManager.Loade
         View inflate = inflater.inflate(R.layout.fragment_my_books, container, false);
         mMyBooksList = (RecyclerView) inflate.findViewById(R.id.my_books);
         mContext = getContext();
-        mBooksListAdapter = new BooksListAdapter(mContext,null, null);
+        mBooksListAdapter = new BooksListAdapter(mContext, null, null);
         mMyBooksList.setAdapter(mBooksListAdapter);
         mMyBooksList.setLayoutManager(new LinearLayoutManager(mContext));
 
@@ -52,33 +53,31 @@ public class MyBooksListFragment extends Fragment implements LoaderManager.Loade
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(LOADER_ID, null, this);
-//        if (mHoldForTransition) getActivity().supportPostponeEnterTransition();
-    }
-
-    @Override
-    public void onInflate(Context context, AttributeSet attrs, Bundle savedInstanceState) {
-        super.onInflate(context, attrs, savedInstanceState);
-        TypedArray a =
-                context.obtainStyledAttributes(attrs, R.styleable.Book, 0, 0);
-        mHoldForTransition =
-                a.getBoolean(R.styleable.Book_sharedElementTransition, false);
-        a.recycle();
-    }
-
-    private void restartLoader() {
-        getLoaderManager().restartLoader(LOADER_ID, null, this);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(mContext, AlexandriaContract.Favorites.CONTENT_URI,
+        return new CursorLoader(mContext, Favorites.CONTENT_URI,
                 Utils.PROJECTION, null, null, null);
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(Loader<Cursor> loader, final Cursor data) {
         mBooksListAdapter.swapCursor(data);
-//        if (mHoldForTransition) getActivity().supportStartPostponedEnterTransition();
+        if (MainActivity.sIsTablet) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    data.moveToFirst();
+                    MainActivity activity = (MainActivity) mContext;
+                    if (data.getCount() == 0) {
+                        activity.showDetailsForTablet(null, null, 0);
+                    } else {
+                        activity.showDetailsForTablet(Favorites.buildBookUri(data.getLong(0)), null, 0);
+                    }
+                }
+            }, 100);
+        }
     }
 
     @Override

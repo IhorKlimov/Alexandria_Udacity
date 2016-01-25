@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Basics-->
+    <dimen name="activity_horizontal_margin">32dp</dimen>
+    <dimen name="activity_vertical_margin">32dp</dimen>
+
+
+
+    <dimen name="list_item_extra_padding">16dp</dimen>
+    <dimen name="tablet_fragment_spacing">8dp</dimen>
+    <dimen name="detail_container_bottom_margin">32dp</dimen>
+
+
+
+    <!--MainActivity-->
+    <dimen name="result_item_horizontal_margin">32dp</dimen>
+
+    <!--Navigation Drawer-->
+    <dimen name="nav_header_height">180dp</dimen>
+
+    <!--DetailActivity-->
+    <dimen name="desc_extra_margin">152dp</dimen>
+
+
+</resources>

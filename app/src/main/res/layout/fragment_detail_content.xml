@@ -1,0 +1,102 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/details_poster"
+        android:layout_width="100dp"
+        android:layout_height="150dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:contentDescription="@string/book_poster_desc"
+        android:visibility="invisible"
+        app:layout_rowSpan="3" />
+
+    <TextView
+        android:id="@+id/title"
+        style="@style/DetailsTitle"
+        android:layout_width="0dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:gravity="center_horizontal"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:textColor="@color/primary_text"
+        app:layout_gravity="fill_horizontal" />
+
+    <TextView
+        android:id="@+id/authors"
+        style="@style/DetailsTextMedium"
+        android:layout_width="0dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/details_grid_vertical_margin"
+        android:gravity="center_horizontal"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:textColor="@color/secondary_text"
+        app:layout_gravity="fill_horizontal" />
+
+    <Button
+        android:id="@+id/preview"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="Preview"
+        app:layout_gravity="center_horizontal|" />
+
+    <View
+        android:layout_height="@dimen/details_divider_height"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@color/divider"
+        app:layout_columnSpan="2" />
+
+    <RatingBar
+        android:id="@+id/rating_bar"
+        style="?android:ratingBarStyleSmall"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:numStars="5"
+        android:stepSize="0.5"
+        app:layout_columnSpan="2" />
+
+    <TextView
+        android:id="@+id/categories"
+        style="@style/DetailsTextSmall"
+        android:layout_marginTop="@dimen/details_grid_vertical_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:textColor="@color/secondary_text"
+        app:layout_columnSpan="2" />
+
+    <TextView
+        android:id="@+id/page_count"
+        style="@style/DetailsTextSmall"
+        android:layout_marginTop="@dimen/details_grid_vertical_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:textColor="@color/secondary_text"
+        app:layout_columnSpan="2" />
+
+    <TextView
+        android:id="@+id/description"
+        style="@style/PlotText"
+        android:layout_marginBottom="@dimen/desc_extra_margin"
+        android:layout_marginTop="@dimen/details_grid_vertical_margin"
+        android:fontFamily="sans-serif-light"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:textColor="@color/secondary_text"
+        app:layout_columnSpan="2" />
+
+
+
+    </merge>

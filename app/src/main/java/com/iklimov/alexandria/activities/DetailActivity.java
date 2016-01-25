@@ -55,7 +55,7 @@ public class DetailActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.details_toolbar);
         mPager = (ViewPager) findViewById(R.id.pager);
 
 
@@ -71,11 +71,11 @@ public class DetailActivity extends AppCompatActivity
         ActionBar supportActionBar = getSupportActionBar();
         supportActionBar.setDisplayHomeAsUpEnabled(true);
 
-//        supportPostponeEnterTransition();
+        supportPostponeEnterTransition();
 
-        float density = getResources().getDisplayMetrics().density;
-        mPager.setPageMargin((int) (density * 32));
-        mPager.setPageMarginDrawable(R.color.gray_200);
+//        float density = getResources().getDisplayMetrics().density;
+//        mPager.setPageMargin((int) (density * 32));
+//        mPager.setPageMarginDrawable(R.color.gray_200);
 
         if (searchResult == null) getLoaderManager().initLoader(LOADER_ID, null, this);
         else mPager.setCurrentItem(mPosition);
@@ -90,6 +90,8 @@ public class DetailActivity extends AppCompatActivity
         for (Book b : sBooksToAdd) {
             Utils.addToFavorites(this, b);
         }
+        sBooksToRemove.clear();
+        sBooksToAdd.clear();
     }
 
     @Override

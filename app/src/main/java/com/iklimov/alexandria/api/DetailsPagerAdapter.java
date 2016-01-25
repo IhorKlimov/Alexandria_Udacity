@@ -56,8 +56,8 @@ public class DetailsPagerAdapter extends FragmentStatePagerAdapter {
 
         if (mSearchResult == null) {
             mCursor.moveToPosition(position);
-            args.putString(BookDetailFragment.BOOK_URI,
-                    AlexandriaContract.Favorites.buildBookUri(mCursor.getLong(0)).toString());
+            args.putParcelable(BookDetailFragment.BOOK_URI,
+                    AlexandriaContract.Favorites.buildBookUri(mCursor.getLong(0)));
         } else {
             Book book = mSearchResult.get(position);
             Log.d(LOG_TAG, "getItem: "+ book.title);

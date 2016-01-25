@@ -28,10 +28,13 @@ public class AlexandriaContract {
         public static final String COL_RATING = "rating";
         public static final String COL_SHARE_LINK = "link";
         public static final String COL_VOLUME_ID = "volume_id";
+        public static final String COL_PREVIEW_LINK = "preview_link";
 
 
         public static Uri buildBookUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
+            return id != -1 ?
+                    ContentUris.withAppendedId(CONTENT_URI, id)
+                    : null;
         }
 
         public static String getIdFromUri(Uri uri) {
@@ -40,7 +43,7 @@ public class AlexandriaContract {
 
         public static final String SQL_CREATE_FAVORITES_TABLE =
                 "CREATE TABLE " + AlexandriaContract.Favorites.TABLE_NAME + " (" +
-                        Favorites._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                        Favorites._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         Favorites.COL_TITLE + " TEXT NOT NULL," +
                         Favorites.COL_IMAGE_URL + " TEXT ," +
                         Favorites.COL_DESC + " TEXT ," +
@@ -48,7 +51,8 @@ public class AlexandriaContract {
                         Favorites.COL_CATEGORIES + " TEXT ," +
                         Favorites.COL_PAGES + " TEXT ," +
                         Favorites.COL_SHARE_LINK + " TEXT ," +
-                        Favorites.COL_AUTHORS + " TEXT , "+
+                        Favorites.COL_AUTHORS + " TEXT , " +
+                        Favorites.COL_PREVIEW_LINK + " TEXT , " +
                         Favorites.COL_VOLUME_ID + " TEXT );";
 
         public static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME + ";";

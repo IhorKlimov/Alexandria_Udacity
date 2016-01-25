@@ -4,8 +4,8 @@
     <color name="primary_dark">#512DA8</color>
     <color name="primary_light">#D1C4E9</color>
     <color name="accent">#FF9800</color>
-    <color name="primary_text">#212121</color>
-    <color name="secondary_text">#727272</color>
+    <color name="primary_text">#ffffff</color>
+    <color name="secondary_text">#ffffff</color>
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
 
@@ -15,10 +15,8 @@
     <color name="lime_800">#9E9D24</color>
     <color name="lime_900">#004D40</color>
 
-    <color name="teal">#009688</color>
-    <color name="purple">#9C27B0</color>
 
+    <color name="share_button_color">#ffffffff</color>
     <color name="gray_200">#EEEEEE</color>
 
-    <color name="text_sec">#ffffffff</color>
 </resources>

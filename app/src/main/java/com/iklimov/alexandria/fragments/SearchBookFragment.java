@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.iklimov.alexandria.activities.MainActivity;
 import com.iklimov.alexandria.api.BooksListAdapter;
 import com.iklimov.alexandria.helpers.Utils;
 import com.iklimov.alexandria.R;
@@ -121,6 +122,14 @@ public class SearchBookFragment extends Fragment {
             scanBtn.clearAnimation();
             scanBtn.setImageResource(R.drawable.ic_search_24dp);
             mRunning = false;
+            if (MainActivity.sIsTablet) {
+                MainActivity activity = (MainActivity) mContext;
+                if (mSearchResults.size() == 0) {
+                    activity.showDetailsForTablet(null, null, 0);
+                } else {
+                    activity.showDetailsForTablet(null, mSearchResults, 0);
+                }
+            }
         }
     }
 
