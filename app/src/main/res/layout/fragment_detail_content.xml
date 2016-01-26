@@ -7,7 +7,7 @@
         android:layout_height="150dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:contentDescription="@string/book_poster_desc"
+        android:contentDescription="@string/book_image_desc"
         android:visibility="invisible"
         app:layout_rowSpan="3" />
 

@@ -1,85 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Alexandria</string>
-    <string name="title_activity_detail">Details</string>
+    <string name="app_name" translatable="false">Alexandria</string>
 
-    <!-- Menu Items -->
+    <!-- Drawer Items -->
     <string name="my_books">My Books</string>
     <string name="find_a_book">Find a Book</string>
     <string name="about">About</string>
 
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="action_settings">Settings</string>
-    <string name="scan_button">Scan</string>
-    <string name="input_hint">Insert book title.</string>
-    <string name="book_cover">Bookcover</string>
-
-
-    <string name="not_found">No Book found</string>
-    <string name="search">Search</string>
-    <string name="pref_startScreen">Select Startscreen</string>
-    <string name="title_activity_settings">Settings</string>
-    <string name="action_share">Share</string>
-    <string name="back_button">go back</string>
-    <string name="share_text">A must read book: </string>
-
-    <string name="about_text">This application gets book information from a Google API. All titles, cover images, and authors information come from there.
-    The original version of this app was built by Sascha Jaschke, and a modified version is given to students in the Udacity Android Nanodegree program. </string>
 
     <!-- Sign-in status messages -->
-    <string name="title_text">Alexandria</string>
-    <string name="signed_in_fmt">Signed in as: %s</string>
-    <string name="signed_in">Signed in</string>
-    <string name="signing_in">Signing in…</string>
-    <string name="signed_out">Signed out</string>
-    <string name="signed_in_err">"Error: please check logs."</string>
-    <string name="error_null_person">
-        Error: Plus.PeopleApi.getCurrentPerson returned null. Ensure that the Google+ API is
-        enabled for your project, you have a properly configured google-services.json file
-        and that your device has an internet connection.
-    </string>
     <string name="loading">Loading…</string>
-    <string name="auth_code_fmt">Auth Code: %s</string>
-    <string name="id_token_fmt">ID Token: %s</string>
 
-    <!-- Google Play Services error for Toast -->
-    <string name="play_services_error_fmt">Google Play Services Error: %i</string>
-
-    <!-- Button labels -->
-    <string name="sign_out">Sign Out</string>
-    <string name="disconnect">Disconnect</string>
-
-    <!-- Content Description for images -->
-    <string name="desc_google_icon">Google Logo</string>
-
-    <!-- Rationale for asking for Contacts -->
-    <string name="contacts_permission_rationale">Contacts access is needed in order to retrieve your email address.</string>
-
-    <!-- Activity Names and Descriptions -->
-    <string name="name_sign_in_activity">SignInActivity</string>
-    <string name="desc_sign_in_activity">Signing in, signing out, and revoking access.</string>
-    <string name="desc_sign_in_activity_scopes">Signing in, signing out, and revoking access with Google Drive permissions.</string>
-    <string name="name_id_token_activity">IdTokenActivity</string>
-    <string name="desc_id_token_activity">Retrieving an ID Token for the user.</string>
-    <string name="desc_auth_code_activity">Demonstrate retrieving an auth code for authorizing your server.</string>
-    <string name="name_auth_code_activity">ServerAuthCodeActivity</string>
-
+    <!--Descriptions -->
     <string name="book_image_desc">Book Image</string>
     <string name="my_photo_description">My Photo</string>
 
     <!-- Preferences-->
-    <string name="pref_token">Preference Books Token</string>
-    <string name="pref_user_email">Preference User email</string>
-    <string name="pref_user_name">Preference User name</string>
-    <string name="pref_user_photo">Preference User photo</string>
-    <string name="book_poster_desc">Book\'s Poster</string>
-    <string name="detail_poster_transition_name">Book\'s Poster transition name</string>
+    <string name="pref_token" translatable="false">Preference Books Token</string>
+    <string name="pref_user_email" translatable="false">Preference User email</string>
+    <string name="pref_user_name" translatable="false">Preference User name</string>
+    <string name="pref_user_photo" translatable="false">Preference User photo</string>
 
 
-    <!-- DetailFragment-->
+    <!--Main-->
+    <string name="input_hint">Enter book title or barcode</string>
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+
+
+    <!-- Details-->
+    <string name="title_activity_detail">Details</string>
     <string name="authors">by %s</string>
     <string name="page_count">Pages: %s</string>
     <string name="category">Category: %s</string>
+    <string name="action_share" translatable="false">Share</string>
+
+    <!--About-->
+    <string name="about_text">This application gets book information from a Google API. All titles, cover images, and authors information come from there.
+    The original version of this app was built by Sascha Jaschke, and a modified version is given to students in the Udacity Android Nanodegree program. </string>
 
 </resources>

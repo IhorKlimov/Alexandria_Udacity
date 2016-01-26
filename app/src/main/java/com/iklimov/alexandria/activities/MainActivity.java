@@ -124,7 +124,6 @@ public class MainActivity extends AppCompatActivity
                 .transform(new CircleTransform())
                 .into(userPhoto);
 
-        mTitle = getTitle();
     }
 
 

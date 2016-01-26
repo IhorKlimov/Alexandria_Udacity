@@ -1,6 +1,7 @@
 package com.iklimov.alexandria.fragments;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -35,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 
-public class SearchBookFragment extends Fragment {
+public class SearchBookFragment extends Fragment implements View.OnClickListener {
     private static final String LOG_TAG = "SearchBookFragment";
 
     private Context mContext;
@@ -68,37 +69,14 @@ public class SearchBookFragment extends Fragment {
 
         mSearchResults = new ArrayList<>();
         mResultsView.setAdapter(new BooksListAdapter(mContext, null, mSearchResults));
-        mResultsView.setLayoutManager(new LinearLayoutManager(mContext));
+        int orientation = mContext.getResources().getConfiguration().orientation;
+        mResultsView.setLayoutManager(new LinearLayoutManager(mContext,
+                orientation == Configuration.ORIENTATION_PORTRAIT && MainActivity.sIsTablet
+                        ? LinearLayoutManager.HORIZONTAL
+                        : LinearLayoutManager.VERTICAL, false));
 
         scanBtn = (ImageButton) rootView.findViewById(R.id.scan_button);
-        scanBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String query = mEan.getText().toString();
-                if (isInternetAvailable()) {
-                    mSearchResults.clear();
-                    if (!mRunning) {
-                        scanBtn.setImageResource(R.drawable.ic_cached_24dp);
-                        Animation rotation = AnimationUtils.loadAnimation(mContext, R.anim.rotate);
-                        rotation.setRepeatCount(Animation.INFINITE);
-                        scanBtn.startAnimation(rotation);
-                        mRunning = true;
-                        new Search().execute(query);
-                    } else {
-                        scanBtn.clearAnimation();
-                        scanBtn.setImageResource(R.drawable.ic_search_24dp);
-                    }
-
-//                    Drawable d = scanBtn.getDrawable();
-//                    if (d instanceof Animatable) {
-//                        ((Animatable)d).start();
-//                    }
-                } else {
-                    Toast.makeText(mContext, "Please check your Internet connection",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        scanBtn.setOnClickListener(this);
 
         if (savedInstanceState != null) {
             mEan.setText(savedInstanceState.getString(EAN_CONTENT));
@@ -109,6 +87,7 @@ public class SearchBookFragment extends Fragment {
     }
 
     private class Search extends AsyncTask<String, Void, Void> {
+
         @Override
         protected Void doInBackground(String... params) {
             search(params[0]);
@@ -131,6 +110,7 @@ public class SearchBookFragment extends Fragment {
                 }
             }
         }
+
     }
 
     private boolean isInternetAvailable() {
@@ -147,11 +127,19 @@ public class SearchBookFragment extends Fragment {
 
         try {
             final String FORECAST_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
+            Uri builtUri;
 
-            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter("q", "intitle:" + query)
-                    .appendQueryParameter("maxResults", "40")
-                    .build();
+            if (isIsbn(query)) {
+                if (query.length() == 10 && !query.startsWith("978")) query = "978" + query;
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter("q", "isbn:" + query)
+                        .build();
+            } else {
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter("q", "intitle:" + query)
+                        .appendQueryParameter("maxResults", "40")
+                        .build();
+            }
 
             URL url = new URL(builtUri.toString());
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -183,5 +171,42 @@ public class SearchBookFragment extends Fragment {
         }
         Book[] books = Utils.readJsonBook(bookJsonString);
         if (books != null) Collections.addAll(mSearchResults, books);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.scan_button:
+                String query = mEan.getText().toString();
+                if (isInternetAvailable()) {
+                    mSearchResults.clear();
+                    if (!mRunning) {
+                        scanBtn.setImageResource(R.drawable.ic_cached_24dp);
+                        Animation rotation = AnimationUtils.loadAnimation(mContext, R.anim.rotate);
+                        rotation.setRepeatCount(Animation.INFINITE);
+                        scanBtn.startAnimation(rotation);
+                        mRunning = true;
+                        new Search().execute(query);
+                    } else {
+                        scanBtn.clearAnimation();
+                        scanBtn.setImageResource(R.drawable.ic_search_24dp);
+                    }
+
+//                    Drawable d = scanBtn.getDrawable();
+//                    if (d instanceof Animatable) {
+//                        ((Animatable)d).start();
+//                    }
+                } else {
+                    Toast.makeText(mContext, "Please check your Internet connection",
+                            Toast.LENGTH_SHORT).show();
+                }
+        }
+    }
+
+    private boolean isIsbn(String query) {
+        for (char ch : query.toCharArray()) {
+            if (!Character.isDigit(ch)) return false;
+        }
+        return !(query.length() != 10 && query.length() != 13);
     }
 }

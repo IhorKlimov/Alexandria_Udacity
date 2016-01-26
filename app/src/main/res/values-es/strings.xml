@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about">Acerca de</string>
+    <string name="about_text">Esta aplicación obtiene la información del libro de una API de Google. Todos los títulos, imágenes de la cubierta, y los autores de información provienen de allí. La versión original de esta aplicación fue construida por Sascha Jaschke, y una versión modificada se da a los estudiantes en el programa Udacity Android Nanodegree.</string>
+    <string name="authors">%s</string>
+    <string name="book_image_desc">imagen del libro</string>
+    <string name="category">Categoría: %s</string>
+    <string name="find_a_book">Buscar un libro</string>
+    <string name="input_hint">Introduzca el título del libro o de código de barras</string>
+    <string name="loading">Cargando…</string>
+    <string name="my_books">Mis libros</string>
+    <string name="page_count">Páginas: %s</string>
+    <string name="title_activity_detail">Detalles</string>
+</resources>

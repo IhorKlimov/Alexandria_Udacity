@@ -24,5 +24,6 @@
     <dimen name="details_divider_height">2dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="desc_extra_margin">100dp</dimen>
+    <dimen name="horizontal_margin_tablet_portrait">64dp</dimen>
 
 </resources>

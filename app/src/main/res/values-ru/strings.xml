@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about">О приложении</string><string name="about_text">Это приложение получает информацию о книге из Google API. Все названия, изображения обложек, а авторы информации оттуда.
+Оригинальная версия этого приложения была построена Саша Jaschke, и измененная версия отдается студентам в программе Udacity Android-Nanodegree.</string>
+    <string name="authors">%s</string>
+    <string name="book_image_desc">Обложка книги</string>
+    <string name="category">Жанр: %s</string>
+    <string name="find_a_book">Поиск книги</string>
+    <string name="input_hint">Название книги или баркод</string>
+    <string name="loading">Загрузка...</string>
+    <string name="my_books">Мои книги</string>
+    <string name="my_photo_description">Мое фото</string>
+    <string name="page_count">Страниц: %s</string>
+    <string name="title_activity_detail">Подробности</string>
+</resources>

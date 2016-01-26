@@ -1,6 +1,7 @@
 package com.iklimov.alexandria.fragments;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -44,7 +45,11 @@ public class MyBooksListFragment extends Fragment implements LoaderManager.Loade
         mContext = getContext();
         mBooksListAdapter = new BooksListAdapter(mContext, null, null);
         mMyBooksList.setAdapter(mBooksListAdapter);
-        mMyBooksList.setLayoutManager(new LinearLayoutManager(mContext));
+        int orientation = mContext.getResources().getConfiguration().orientation;
+        mMyBooksList.setLayoutManager(new LinearLayoutManager(mContext,
+                orientation == Configuration.ORIENTATION_PORTRAIT && MainActivity.sIsTablet
+                        ? LinearLayoutManager.HORIZONTAL
+                        : LinearLayoutManager.VERTICAL, false));
 
         return inflate;
     }
