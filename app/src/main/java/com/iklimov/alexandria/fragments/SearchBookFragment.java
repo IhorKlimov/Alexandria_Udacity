@@ -7,6 +7,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,6 +39,8 @@ import java.util.Collections;
 
 public class SearchBookFragment extends Fragment implements View.OnClickListener {
     private static final String LOG_TAG = "SearchBookFragment";
+    public static final String ISBN = "ISBN";
+    public static final String RESULTS = "Results";
 
     private Context mContext;
     private EditText mEan;
@@ -53,9 +56,17 @@ public class SearchBookFragment extends Fragment implements View.OnClickListener
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+        Log.d(LOG_TAG, "onSaveInstanceState: ");
         if (mEan != null) {
-            outState.putString(EAN_CONTENT, mEan.getText().toString());
+            String value = mEan.getText().toString();
+            Log.d(LOG_TAG, "onSaveInstanceState: " + value);
+            outState.putString(EAN_CONTENT, value);
         }
+        if (mSearchResults.size() != 0) {
+            outState.putParcelableArrayList(RESULTS, mSearchResults);
+        }
+
     }
 
     @Override
@@ -67,7 +78,13 @@ public class SearchBookFragment extends Fragment implements View.OnClickListener
         mResultsView = (RecyclerView) rootView.findViewById(R.id.results);
         mContext = getContext();
 
-        mSearchResults = new ArrayList<>();
+        boolean b = savedInstanceState != null;
+
+        if (b && savedInstanceState.containsKey(RESULTS)) {
+            mSearchResults = savedInstanceState.getParcelableArrayList(RESULTS);
+        } else {
+            mSearchResults = new ArrayList<>();
+        }
         mResultsView.setAdapter(new BooksListAdapter(mContext, null, mSearchResults));
         int orientation = mContext.getResources().getConfiguration().orientation;
         mResultsView.setLayoutManager(new LinearLayoutManager(mContext,
@@ -78,12 +95,25 @@ public class SearchBookFragment extends Fragment implements View.OnClickListener
         scanBtn = (ImageButton) rootView.findViewById(R.id.scan_button);
         scanBtn.setOnClickListener(this);
 
-        if (savedInstanceState != null) {
-            mEan.setText(savedInstanceState.getString(EAN_CONTENT));
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Bundle arguments = getArguments();
+        boolean b = arguments != null;
+        if (b && arguments.containsKey(ISBN)) {
+            new Search().execute(arguments.getString(ISBN));
+            arguments.remove(ISBN);
+        }
+        if (b && arguments.containsKey(EAN_CONTENT)) {
+            String string = savedInstanceState.getString(EAN_CONTENT);
+            Log.d(LOG_TAG, "onViewCreated: "+ string);
+            mEan.setText(string);
             mEan.setHint("");
         }
 
-        return rootView;
     }
 
     private class Search extends AsyncTask<String, Void, Void> {
@@ -121,6 +151,7 @@ public class SearchBookFragment extends Fragment implements View.OnClickListener
     }
 
     private void search(String query) {
+        Log.d(LOG_TAG, "search: ");
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String bookJsonString = null;

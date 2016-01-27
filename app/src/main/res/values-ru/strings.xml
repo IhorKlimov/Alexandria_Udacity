@@ -6,7 +6,7 @@
     <string name="book_image_desc">Обложка книги</string>
     <string name="category">Жанр: %s</string>
     <string name="find_a_book">Поиск книги</string>
-    <string name="input_hint">Название книги или баркод</string>
+    <string name="input_hint">Название книги или ISBN</string>
     <string name="loading">Загрузка...</string>
     <string name="my_books">Мои книги</string>
     <string name="my_photo_description">Мое фото</string>

@@ -8,6 +8,10 @@
             android:icon="@drawable/books_24dp"
             android:title="@string/find_a_book" />
         <item
+            android:id="@+id/scan"
+            android:icon="@drawable/barcode_scan"
+            android:title="@string/barcode_scan" />
+        <item
             android:id="@+id/my_books"
             android:icon="@drawable/favorites"
             android:title="@string/my_books" />

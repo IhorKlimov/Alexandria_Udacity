@@ -6,7 +6,7 @@
     <string name="book_image_desc">bok bilder</string>
     <string name="category">Kategori: %s</string>
     <string name="find_a_book">Hitta en bok</string>
-    <string name="input_hint">Ange boktitel eller streckkod</string>
+    <string name="input_hint">Ange boktitel eller ISBN</string>
     <string name="loading">Läser in…</string>
     <string name="my_books">Mina böcker</string>
     <string name="my_photo_description">Mitt foto</string>

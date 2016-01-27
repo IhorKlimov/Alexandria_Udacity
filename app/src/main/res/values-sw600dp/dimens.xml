@@ -16,7 +16,7 @@
     <dimen name="result_item_horizontal_margin">32dp</dimen>
 
     <!--Navigation Drawer-->
-    <dimen name="nav_header_height">180dp</dimen>
+    <dimen name="nav_header_height">200dp</dimen>
 
     <!--DetailActivity-->
     <dimen name="desc_extra_margin">152dp</dimen>

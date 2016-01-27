@@ -146,7 +146,9 @@ public class SignInActivity extends AppCompatActivity
 
                 preferences.edit().putString(context.getString(R.string.pref_token), token).apply();
                 preferences.edit().putString(context.getString(R.string.pref_user_email), email).apply();
-                preferences.edit().putString(context.getString(R.string.pref_user_photo), photoUrl.toString()).apply();
+                if (photoUrl != null) {
+                    preferences.edit().putString(context.getString(R.string.pref_user_photo), photoUrl.toString()).apply();
+                }
                 preferences.edit().putString(context.getString(R.string.pref_user_name), name).apply();
 
             } catch (IOException | GoogleAuthException e) {

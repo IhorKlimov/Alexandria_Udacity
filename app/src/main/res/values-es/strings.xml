@@ -6,7 +6,7 @@
     <string name="book_image_desc">imagen del libro</string>
     <string name="category">Categoría: %s</string>
     <string name="find_a_book">Buscar un libro</string>
-    <string name="input_hint">Introduzca el título del libro o de código de barras</string>
+    <string name="input_hint">Introduzca el título del libro o de código de ISBN</string>
     <string name="loading">Cargando…</string>
     <string name="my_books">Mis libros</string>
     <string name="page_count">Páginas: %s</string>

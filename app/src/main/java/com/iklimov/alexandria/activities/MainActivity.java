@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -30,15 +28,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.stetho.Stetho;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.iklimov.alexandria.R;
 import com.iklimov.alexandria.api.Book;
 import com.iklimov.alexandria.api.Holder;
+import com.iklimov.alexandria.barcode_scan.BarcodeCaptureActivity;
+import com.iklimov.alexandria.fragments.AboutFragment;
 import com.iklimov.alexandria.fragments.BookDetailFragment;
 import com.iklimov.alexandria.fragments.MyBooksListFragment;
-import com.iklimov.alexandria.R;
 import com.iklimov.alexandria.fragments.SearchBookFragment;
 import com.iklimov.alexandria.helpers.Callback;
 import com.iklimov.alexandria.helpers.CircleTransform;
-import com.iklimov.alexandria.fragments.AboutFragment;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity
     public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
     public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
     private static final String DETAILFRAGMENT_TAG = "Detail Fragment";
+    private static final int RC_BARCODE_CAPTURE = 9001;
     public static boolean sIsTablet = false;
 
     private CharSequence mTitle;
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout mDrawer;
     Context context;
     private Toolbar mToolbar;
+    private NavigationView mNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,15 +73,11 @@ public class MainActivity extends AppCompatActivity
         Stetho.initializeWithDefaults(context);
 
         mFragmentManager = getSupportFragmentManager();
-        mFragmentManager.beginTransaction()
-                .replace(R.id.search_view, new SearchBookFragment())
-                .commit();
-
+        if (savedInstanceState == null) replaceFragment(new SearchBookFragment());
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         if (sIsTablet) getSupportActionBar().setDisplayShowTitleEnabled(false);
         else mToolbar.setTitle(getString(R.string.find_a_book));
-
         TextView appTitle = (TextView) findViewById(R.id.app_title);
         if (appTitle != null) {
             Typeface typeface = Typeface.createFromAsset(getAssets(), "fonts/Gabrielle.ttf");
@@ -101,21 +100,23 @@ public class MainActivity extends AppCompatActivity
         mDrawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setItemIconTintList(null);
+        mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
+        mNavigationView.setNavigationItemSelectedListener(this);
+        mNavigationView.setItemIconTintList(null);
 
         mMessageReceiver = new MessageReceiver();
         IntentFilter filter = new IntentFilter(MESSAGE_EVENT);
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
 
-        View headerView = navigationView.getHeaderView(0);
+        View headerView = mNavigationView.getHeaderView(0);
         TextView userName = (TextView) headerView.findViewById(R.id.user_name);
         TextView userEmail = (TextView) headerView.findViewById(R.id.user_email);
         ImageView userPhoto = (ImageView) headerView.findViewById(R.id.user_photo);
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        userName.setText(pref.getString(getString(R.string.pref_user_name), ""));
+        String name = pref.getString(getString(R.string.pref_user_name), "");
+        Log.d(LOG_TAG, "onCreate: " + name);
+        userName.setText(name);
         userEmail.setText(pref.getString(getString(R.string.pref_user_email), ""));
         String photoUrl = pref.getString(getString(R.string.pref_user_photo), "");
 
@@ -126,15 +127,58 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-
-    public void setTitle(int titleId) {
-        mTitle = getString(titleId);
-    }
-
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         super.onDestroy();
+    }
+
+    /**
+     * Called when an activity you launched exits, giving you the requestCode
+     * you started it with, the resultCode it returned, and any additional
+     * data from it.  The <var>resultCode</var> will be
+     * {@link #RESULT_CANCELED} if the activity explicitly returned that,
+     * didn't return any result, or crashed during its operation.
+     * <p/>
+     * <p>You will receive this call immediately before onResume() when your
+     * activity is re-starting.
+     * <p/>
+     *
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode  The integer result code returned by the child activity
+     *                    through its setResult().
+     * @param data        An Intent, which can return result data to the caller
+     *                    (various data can be attached to Intent "extras").
+     * @see #startActivityForResult
+     * @see #createPendingResult
+     * @see #setResult(int)
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_BARCODE_CAPTURE) {
+            mNavigationView.setCheckedItem(R.id.search_book);
+            if (resultCode == CommonStatusCodes.SUCCESS) {
+                if (data != null) {
+                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+
+                    Bundle args = new Bundle();
+                    args.putString(SearchBookFragment.ISBN, barcode.displayValue);
+                    SearchBookFragment f = new SearchBookFragment();
+                    f.setArguments(args);
+                    replaceFragment(f);
+                } else {
+                    Toast.makeText(this, "No barcode captured", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+    }
+
+    public void setTitle(int titleId) {
+        mTitle = getString(titleId);
     }
 
     @Override
@@ -196,17 +240,44 @@ public class MainActivity extends AppCompatActivity
                     mToolbar.setTitle(getString(R.string.about));
                 } else {
                     Fragment f = getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
-                    if (f != null)  mFragmentManager.beginTransaction().remove(f).commit();
+                    if (f != null) mFragmentManager.beginTransaction().remove(f).commit();
                 }
                 nextFragment = new AboutFragment();
+                break;
+            case R.id.scan:
+//                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.puppy);
+//                BarcodeDetector detector =
+//                        new BarcodeDetector.Builder(this)
+//                                .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
+//                                .build();
+//                if(!detector.isOperational()){
+//                    Toast.makeText(this,"Could not set up the detector!", Toast.LENGTH_SHORT).show();
+//                    return false;
+//                }
+//                Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+//                SparseArray<Barcode> barcodes = detector.detect(frame);
+//                Barcode thisCode = barcodes.valueAt(0);
+//                Log.d(LOG_TAG, "onNavigationItemSelected: "+ thisCode.rawValue);
+                Fragment f = getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+                if (f != null) mFragmentManager.beginTransaction().remove(f).commit();
+                Intent intent = new Intent(this, BarcodeCaptureActivity.class);
+                intent.putExtra(BarcodeCaptureActivity.AutoFocus, true);
+
+                startActivityForResult(intent, RC_BARCODE_CAPTURE);
         }
 
-        mFragmentManager.beginTransaction()
-                .replace(R.id.search_view, nextFragment)
-                .commit();
+        if (nextFragment != null) {
+            replaceFragment(nextFragment);
+        }
 
         mDrawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void replaceFragment(Fragment nextFragment) {
+        mFragmentManager.beginTransaction()
+                .replace(R.id.search_view, nextFragment)
+                .commit();
     }
 
     private class MessageReceiver extends BroadcastReceiver {
